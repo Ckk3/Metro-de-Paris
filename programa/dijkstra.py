@@ -46,13 +46,12 @@ def dijkstra(grafo, origem, fim):
                 controle[vizinho] = pesoCalc
 
         if controle == {}: break
+
         minVizinho = min(controle.items(), key=lambda x: x[1])  # seleciona o menor vizinho
         atual = minVizinho[0]
         noAtual[atual] = minVizinho[1]
-
         naoVisitados.remove(atual)
         del controle[atual]
-
 
     print("A menor distância de %s até %s é: %s" % (origem, fim, distanciaAtual[fim][0]))
     print("O menor caminho é: %s" % printPath(distanciaAtual, origem, fim))
@@ -66,7 +65,7 @@ def printPath(distancias, inicio, fim):
         return inicio
 
 
-#Dicionario com as informações do grafo
+#Dicionario com as informações do grafo (Distancia em km)
 grafo_estacoes = {'1': {'2': 10},
          '2': {'3': 8.5, '9': 10, '10': 3.5},
          '3': {'4': 6.3, '9': 9.4, '13': 18.7},
@@ -90,7 +89,8 @@ s, t = receber_st(resposta=estacoes)
 v = int(input('Velocidade média do trem em km/h: '))
 #Receber o tempo de baldeação
 #u = int(input('Tempo para trocar de metrô, em minutos: '))
-passos = []
+
+#Calculos
 distancia_total = dijkstra(grafo=grafo_estacoes, origem=s, fim=t)
 tempo_trem_minutos = (distancia_total/v)*60
-#print(f'Tempo do trem é igual a {tempo_trem_minutos} e distancia total é {distancia_total}')
+print(f'Tempo do trem é igual a {tempo_trem_minutos} e distancia total é {distancia_total}')
