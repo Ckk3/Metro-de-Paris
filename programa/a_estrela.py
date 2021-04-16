@@ -10,8 +10,78 @@ def receber_st(resposta):
     numeros = resposta.split()
     inicio = str(numeros[0])
     fim = str(numeros[1])
-    return inicio, fim
+    return int(inicio), int(fim)
 
+def corDasLinhas(cor):
+	if cor == 1:
+		return "Azul"
+	elif cor == 2:
+		return "Amarela"
+	elif cor == 3:
+		return "Verde"
+	elif cor == 4:
+		return "Vermelha"
+
+def estrela():
+	k = 0
+	while k > -1:
+		# AINDA NÃO CHEGAMOS...
+		for i in range(0, len(fronteira)):
+			if visitados[fronteira[i][2]] == 0:
+				break
+		if fronteira[i][2] == target:
+			visitados[fronteira[i][2]] = 1
+			resposta.append(fronteira[i][2])
+			caminho(fronteira[i])
+			break
+		sucessores_de(fronteira[i])
+		fronteira.sort(key=lambda fronteira: fronteira[0])
+		k += 1
+
+
+def caminho(a):
+	while a[3][2] != -1:
+		resposta.append(a[3][2])
+		a = a[3]
+
+def sucessores_de(a):
+	for i in range(0, len(estacoes_nomes)):
+		if matriz_ligacoes[a[2]][i] != 0 and visitados[a[2]] == 0:
+			#	CALCULAR O G DESSE SUCESSOR
+			g = converterParaTempo(a[3][1] + matriz_estacoes[a[2]][i])
+			#	CALCULAR H DESSE SUCESSOR
+			h = converterParaTempo(matriz_estacoes[i][target])
+			#	PAI DO SUCESSOR (DE QUE ESTAÇÃO ESSE TREM CHEGOU EM i)
+			pai = a
+			#	COR DA LINHA
+			linha = matriz_ligacoes[a[2]][i]
+			if a[4] != linha:
+				h += tempo_baldeacao	#	ACRESCIMO DO TEMPO GASTO NA TROCA DE LINHA
+			#	ADICIONAR NA FRONTEIRA NOVO SUCESSOR
+			s = [h+g, g, i, pai, linha]
+			fronteira.append(s)
+	visitados[a[2]] = 1
+	
+
+def converterParaTempo(x):
+	mins = x*2
+	return mins
+
+def tempo_final(kilometros_rodados):
+	horas = kilometros_rodados/velocidade_media
+	minutos = horas * 60
+	return minutos
+
+# LISTA REPRESENTANDO A FRONTEIRA USADA PARA A BUSCA DO A*
+fronteira = []
+
+# ARRAY AUXILIAR PARA MARCAÇÃO DE ESTAÇÕES JÁ OU NÃO VISITADAS
+visitados = [0]*14
+
+resposta = []
+
+trocasDeEstacao = 0
+km = 0
 
 # Matriz com a distancia em linha reta entre as estações
 matriz_estacoes = [
@@ -28,8 +98,8 @@ matriz_estacoes = [
 	(9.1,  3.5,  10.3, 16.7, 28.2, 30.3,  27.3, 20.3, 13.5, 0,    17.6, 24.2, 18.7, 21.2),# E10
 	(16.7, 15.3, 19.5, 23.6, 34.2, 36.7,  34.2, 16.1, 11.2, 17.6, 0,    14.2, 31.5, 35.5),# E11
 	(27.3, 20.9, 19.1, 18.6, 24.8, 27.6,  25.7, 6.4,  10.9, 24.2, 14.2, 0,    28.8, 33.6),# E12
-	(27.6, 19.1, 12.1, 10.6, 14.5, 15.2,  12.4, 22.7, 21.2, 18.7, 31.5, 28.8, 0,    5.1),# E13
-	(29.8, 21.8, 16.6, 15.4, 17.9, 18.2,  15.6, 27.6, 26.6, 21.2, 35.5, 33.6, 5.1,  0) # E14
+	(27.6, 19.1, 12.1, 10.6, 14.5, 15.2,  12.4, 22.7, 21.2, 18.7, 31.5, 28.8, 0,    5.1), # E13
+	(29.8, 21.8, 16.6, 15.4, 17.9, 18.2,  15.6, 27.6, 26.6, 21.2, 35.5, 33.6, 5.1,  0)    # E14
 	]
 
 # AZUL     1
@@ -37,8 +107,8 @@ matriz_estacoes = [
 # VERDE    3
 # VERMELHA 4
 
-# Matriz com as ligações entre as estações
-ligacoes = [
+# Matriz com as ligações entre as estações(linhas)
+matriz_ligacoes = [
 #	E0  E1  E2 E3 E4 E5 E6 E7 E8 E9 E10 E11 E12 E13
 	(0, 1,  0, 0, 0, 0, 0, 0, 0,  0,  0,  0,  0,  0),# E0
 	(1, 0,  1, 0, 0, 0, 0, 0, 2,  2,  0,  0,  0,  0),# E1
@@ -58,10 +128,39 @@ ligacoes = [
 
 # Receber a estação de início e fim
 estacoes = str(input('Insira a estação de início e destino, respectivamente e separadas por espaços (Ex.: 1 3): ')).strip()
-s, t = receber_st(resposta=estacoes)
+start, target = receber_st(resposta=estacoes)
+start -= 1
+target -= 1
+# Nome das estações
+estacoes_nomes = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14']
 # Recebendo velocidade do trem
-v = int(input('Velocidade média do trem em km/h: '))
+velocidade_media = int(input('Velocidade média do trem em km/h: '))
 # Receber o tempo de baldeação
-# u = int(input('Tempo para trocar de metrô, em minutos: '))
-
+tempo_baldeacao = int(input('Tempo para trocar de metrô, em minutos: '))
+''
 # Calculos
+V = [0, 0, -1, -1, -1]
+
+# E = [f, g, indiceEstacao, pai, corDaLinha]
+a = [converterParaTempo(0 + matriz_estacoes[start][target]), 0, start, V, None]
+
+fronteira.append(a)
+
+estrela()
+
+final = resposta[::-1]
+
+
+for i in range(0, len(final)):
+	if i == 0:
+		km += (matriz_estacoes[final[i]][final[i+1]])
+	elif i == len(final)-1:
+		print(f'{estacoes_nomes[final[i]]}')
+		break
+	else:
+		km += matriz_estacoes[final[i]][final[i+1]]
+		if matriz_ligacoes[final[i-1]][final[i]] != matriz_ligacoes[final[i]][final[i+1]]:
+			trocasDeEstacao += 1
+	print(f'{estacoes_nomes[final[i]]}', end='-')
+
+print(tempo_final(km) + (tempo_baldeacao*trocasDeEstacao))
